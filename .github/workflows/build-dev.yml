@@ -51,4 +51,4 @@ jobs:
             dist/release/gridcraft-*-linux-*.deb
             dist/release/gridcraft-*-linux-*.tar.gz
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
