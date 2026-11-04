@@ -1,0 +1,34 @@
+name: sync-dev
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no push)'
+        required: false
+        default: 'false'
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: dev
+      - name: Configure upstream
+        run: |
+          git remote add upstream https://github.com/storytold/gridcraft.git 2>/dev/null || git remote set-url upstream https://github.com/storytold/gridcraft.git
+          git fetch upstream main
+          git fetch origin
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Re-apply patches onto upstream/main
+        run: bash tools/sync-dev.sh --no-push
+      - name: Push dev
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: git push origin dev --force-with-lease
